@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: db_mobilite
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: mobilite
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  scripts:
+    build: ./scripts
+    container_name: scripts_mobilite
+    depends_on:
+      - postgres
+    volumes:
+      - ./scripts:/app
+    command: ["bash", "-c", "sleep 10 && python3 run_all.py"]
+    restart: on-failure
+
+  streamlit:
+    build: ./streamlit_app
+    container_name: visualisation_streamlit
+    depends_on:
+      - postgres
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+
+volumes:
+  db_data:
